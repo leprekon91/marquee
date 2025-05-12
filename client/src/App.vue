@@ -3,9 +3,14 @@
 </script>
 
 <template>
- <h1>yo </h1>
-  <!-- This is where components matched by the route will be rendered -->
-  <router-view />
+  <div class="app">
+    
+    
+    <!-- This is where components matched by the route will be rendered -->
+    <main>
+      <router-view />
+    </main>
+  </div>
 </template>
 
 <style scoped>
