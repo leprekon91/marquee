@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ExampleComponent from '../components/ExampleComponent.vue'
+import Display from '../components/Display.vue'
 
 // Define your routes here
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: ExampleComponent,
+    name: 'display',
+    component: Display,
   },
   {
-    path: '/about',
-    name: 'about',
+    path: '/settings',
+    name: 'settings',
     // Lazy loading routes - only loads when the route is visited
     component: () => import('../components/AboutView.vue'),
   },
