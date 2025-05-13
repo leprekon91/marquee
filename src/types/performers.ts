@@ -1,9 +1,9 @@
 export type Performer = {
-    id: string;
+    id: number;
     order: string;
     name: string;
     club: string;
-    category_id: string;
+    category_id: number;
     routine: string;
 }
 

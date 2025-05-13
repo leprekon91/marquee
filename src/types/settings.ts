@@ -1,7 +1,7 @@
 export type Setting = {
     id?: string;
     key: SettingKey;
-    value: string;
+    value: string|number;
 };
 
 export enum SettingKey {

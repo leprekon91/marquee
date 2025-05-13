@@ -9,7 +9,7 @@ export function getCurrentSettings(): Setting[] {
   return settings;
 }
 
-export function setSetting(key: SettingKey, value: string): void {
+export function setSetting(key: SettingKey, value: any): void {
   const db: Database = getDB();
   const existingSettingStmt = db.prepare('SELECT 1 FROM settings WHERE key = ?');
   const exists = existingSettingStmt.get(key);
@@ -27,7 +27,7 @@ export function setSetting(key: SettingKey, value: string): void {
   }
 }
 
-export function getSettingValue(key: SettingKey): string {
+export function getSettingValue(key: SettingKey): string|number {
   const db: Database = getDB();
   const stmt = db.prepare('SELECT value FROM settings WHERE key = ?');
   const setting: Setting | undefined = stmt.get(key) as Setting | undefined;

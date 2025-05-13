@@ -19,7 +19,7 @@ export function getPerformers(req: Request, res: Response): void {
         let performers: Performer[];
         
         if (categoryId && typeof categoryId === 'string') {
-            performers = getPerformersByCategoryId(categoryId);
+            performers = getPerformersByCategoryId(Number.parseInt(categoryId));
         } else {
             performers = getAllPerformers();
         }

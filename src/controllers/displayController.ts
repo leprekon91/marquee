@@ -17,6 +17,7 @@ export function advanceToNextPerformer(_: Request, res: Response): void {
     const result = setNextPerformer();
     res.status(200).json(result);
   } catch (error) {
+    console.log({error});
     if (error instanceof Error) {
       res.status(404).json({ error: error.message });
     } else {
@@ -44,7 +45,7 @@ export function overrideCurrentPerformer(req: Request, res: Response): void {
 export function changeCategory(req: Request, res: Response): void {
   try {
     const { categoryId } = req.params;
-    setCategory(categoryId);
+    setCategory(Number.parseInt(categoryId));
     res.status(200).json({ success: true, message: 'Category updated successfully' });
   } catch (error) {
     if (error instanceof Error) {

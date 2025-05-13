@@ -13,7 +13,7 @@ export function getAllCategories(): Category[] {
 }
 
 // Function to get a category by ID
-export function getCategoryById(id: string): Category | null {
+export function getCategoryById(id: number): Category | null {
     const db: Database = getDB();
     const stmt = db.prepare('SELECT * FROM categories WHERE id = ?');
     const category: Category | undefined = stmt.get(id) as Category | undefined;

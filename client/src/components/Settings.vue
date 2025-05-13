@@ -101,6 +101,12 @@
         </button>
       </div>
     </form>
+
+    <div class="navigation-links">
+      <router-link to="/" class="nav-link">Admin</router-link>
+      <router-link to="/display" class="nav-link">Display</router-link>
+      <router-link to="/data" class="nav-link">Data Management</router-link>
+    </div>
   </div>
 </template>
 
@@ -618,6 +624,47 @@ input[type='color']::-moz-color-swatch {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Navigation Links */
+.navigation-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eaeaea;
+  justify-content: center;
+}
+
+.nav-link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.nav-link:hover {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive styles for navigation links */
+@media (max-width: 600px) {
+  .navigation-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 /* Responsive styles for mobile */

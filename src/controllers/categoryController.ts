@@ -24,7 +24,7 @@ export function getCategories(req: Request, res: Response): void {
 export function getCategory(req: Request, res: Response): void {
     try {
         const { id } = req.params;
-        const category = getCategoryById(id);
+        const category = getCategoryById(Number.parseInt(id));
         
         if (!category) {
             res.status(404).json({ error: 'Category not found' });

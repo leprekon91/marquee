@@ -9,7 +9,7 @@ export function getDisplaySettings() {
       acc[setting.key] = setting.value;
       return acc;
     },
-    {} as Record<string, string>,
+    {} as Record<string, any>,
   );
 
   const settings = {
@@ -60,11 +60,11 @@ export function setNextPerformer() {
       acc[setting.key] = setting.value;
       return acc;
     },
-    {} as Record<string, string>,
+    {} as Record<string, any>,
   );
 
-  const performerId = currentSettings[SettingKey.CURRENT_PERFORMER];
-  const categoryId = currentSettings[SettingKey.CURRENT_CATEGORY];
+  const performerId = Number.parseInt(currentSettings[SettingKey.CURRENT_PERFORMER]);
+  const categoryId = Number.parseInt(currentSettings[SettingKey.CURRENT_CATEGORY]);
 
   const category = getCategoryById(categoryId);
   if (!category) {
@@ -78,13 +78,13 @@ export function setNextPerformer() {
     throw new Error('Current performer not found');
   }
 
-  const nextPerformer = performers.find(
-    (performer) => performer.order === (parseInt(currentPerformer?.order || '0') + 1).toString(),
-  );
+  const nextPerformer = performers.find((performer) => parseInt(performer.order) > parseInt(currentPerformer.order));
 
   if (!nextPerformer) {
     throw new Error('No next performer found');
   }
+
+  setSetting(SettingKey.CURRENT_PERFORMER, nextPerformer.id);
 
   return {
     performer: nextPerformer,
@@ -107,7 +107,7 @@ export function setCurrentPerformer(performerId: string) {
 }
 
 // set the category to be displayed
-export function setCategory(categoryId: string) {
+export function setCategory(categoryId: number) {
   const category = getCategoryById(categoryId);
   if (!category) {
     throw new Error('Category not found');

@@ -21,22 +21,25 @@
       <div class="panel categories-panel">
         <div class="panel-header">
           <h2>Categories</h2>
-          <button @click="showAddCategoryForm = true" class="primary-button">
-            Add Category
-          </button>
+          <button @click="showAddCategoryForm = true" class="primary-button">Add Category</button>
         </div>
-        
+
         <div class="categories-list">
           <div
             v-for="category in categories"
             :key="category.id"
             @click="selectCategory(category)"
-            :class="['category-item', { active: selectedCategory && selectedCategory.id === category.id }]"
+            :class="[
+              'category-item',
+              { active: selectedCategory && selectedCategory.id === category.id },
+            ]"
           >
             <span class="category-name">{{ category.name }}</span>
             <div class="category-actions">
               <button @click.stop="editCategory(category)" class="icon-button edit">✏️</button>
-              <button @click.stop="confirmDeleteCategory(category)" class="icon-button delete">🗑️</button>
+              <button @click.stop="confirmDeleteCategory(category)" class="icon-button delete">
+                🗑️
+              </button>
             </div>
           </div>
         </div>
@@ -45,8 +48,14 @@
       <!-- Performers Panel -->
       <div class="panel performers-panel">
         <div class="panel-header">
-          <h2>{{ selectedCategory ? `Performers in ${selectedCategory.name}` : 'Select a category' }}</h2>
-          <button v-if="selectedCategory" @click="showAddPerformerForm = true" class="primary-button">
+          <h2>
+            {{ selectedCategory ? `Performers in ${selectedCategory.name}` : 'Select a category' }}
+          </h2>
+          <button
+            v-if="selectedCategory"
+            @click="showAddPerformerForm = true"
+            class="primary-button"
+          >
             Add Performer
           </button>
         </div>
@@ -65,7 +74,7 @@
           <div v-if="performers.length === 0" class="no-performers">
             No performers found in this category. Add your first performer!
           </div>
-          
+
           <div v-else class="performers-table-wrapper">
             <table class="performers-table">
               <thead>
@@ -78,7 +87,7 @@
                   <th class="actions-column">Actions</th>
                 </tr>
               </thead>
-              <draggable 
+              <draggable
                 tag="tbody"
                 v-model="sortablePerformers"
                 item-key="id"
@@ -87,7 +96,7 @@
                 :animation="200"
                 ghost-class="ghost-row"
               >
-                <template #item="{element: performer, index}">
+                <template #item="{ element: performer, index }">
                   <tr class="performer-row">
                     <td class="order-cell">{{ index + 1 }}</td>
                     <td class="handle-column">
@@ -100,8 +109,20 @@
                     <td class="routine-cell">{{ performer.routine || '—' }}</td>
                     <td class="actions-cell">
                       <div class="row-actions">
-                        <button @click="editPerformer(performer)" class="icon-button edit" title="Edit performer">✏️</button>
-                        <button @click="confirmDeletePerformer(performer)" class="icon-button delete" title="Delete performer">🗑️</button>
+                        <button
+                          @click="editPerformer(performer)"
+                          class="icon-button edit"
+                          title="Edit performer"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          @click="confirmDeletePerformer(performer)"
+                          class="icon-button delete"
+                          title="Delete performer"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -122,7 +143,7 @@
       @save="savePerformer"
       @cancel="cancelPerformerEdit"
     />
-    
+
     <!-- Category Form Modal -->
     <CategoryFormModal
       v-if="showAddCategoryForm || isEditingCategory"
@@ -140,14 +161,26 @@
       @confirm="confirmationDialog.onConfirm"
       @cancel="showConfirmationDialog = false"
     />
+
+    <div class="navigation-links">
+      <router-link to="/" class="nav-link">Admin</router-link>
+      <router-link to="/settings" class="nav-link">Settings</router-link>
+      <router-link to="/display" class="nav-link">Display</router-link>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { 
-  getCategories, createCategory, updateCategory, deleteCategory,
-  getPerformers, createPerformer, updatePerformer, deletePerformer 
+import {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getPerformers,
+  createPerformer,
+  updatePerformer,
+  deletePerformer,
 } from '../services/api.js'
 import PerformerFormModal from './PerformerFormModal.vue'
 import CategoryFormModal from './CategoryFormModal.vue'
@@ -156,7 +189,7 @@ import draggable from 'vuedraggable'
 
 // Register components
 const components = {
-  draggable
+  draggable,
 }
 
 // State
@@ -178,7 +211,7 @@ const performerForm = ref({
   name: '',
   club: '',
   routine: '',
-  category_id: ''
+  category_id: '',
 })
 const isEditingPerformer = ref(false)
 const showAddPerformerForm = ref(false)
@@ -188,7 +221,7 @@ const showConfirmationDialog = ref(false)
 const confirmationDialog = ref({
   title: '',
   message: '',
-  onConfirm: () => {}
+  onConfirm: () => {},
 })
 
 // Computed properties
@@ -212,45 +245,45 @@ const sortablePerformers = computed({
     // Simply update the performers array with the new order
     // Don't modify the order property here - we'll do that in onReorderEnd
     performers.value = [...newValue]
-  }
+  },
 })
 
 // Handle reordering of performers
 async function onReorderEnd(event) {
   try {
-    const { newIndex, oldIndex } = event;
-    if (newIndex === oldIndex) return; // No change
-    
+    const { newIndex, oldIndex } = event
+    if (newIndex === oldIndex) return // No change
+
     // Update loading state
-    performersLoading.value = true;
-    error.value = ''; // Clear any previous errors
-    
+    performersLoading.value = true
+    error.value = '' // Clear any previous errors
+
     // Get the currently sorted performers array after the drag operation
-    const updatedPerformers = [...performers.value];
-    
+    const updatedPerformers = [...performers.value]
+
     // Log for debugging
-    console.log('Updating performer orders...');
-    
+    console.log('Updating performer orders...')
+
     // Calculate the range of indexes that need updating
-    const startIndex = Math.min(oldIndex, newIndex);
-    const endIndex = Math.max(oldIndex, newIndex);
-    
+    const startIndex = Math.min(oldIndex, newIndex)
+    const endIndex = Math.max(oldIndex, newIndex)
+
     // Create a batch of updates for all performers in the affected range
-    const updatePromises = [];
-    
+    const updatePromises = []
+
     // Update each performer in the affected range
     for (let i = 0; i < updatedPerformers.length; i++) {
-      const performer = updatedPerformers[i];
-      
+      const performer = updatedPerformers[i]
+
       // Make sure we have the required data
       if (!performer?.id || !performer?.name || !performer?.club || !performer?.category_id) {
-        console.error('Missing required data for performer:', performer);
-        continue;
+        console.error('Missing required data for performer:', performer)
+        continue
       }
-      
+
       // Update all performers with a new order value
-      const order = String(i + 1); // order is 1-based
-      
+      const order = String(i + 1) // order is 1-based
+
       // Only update if the order has changed
       if (performer.order !== order) {
         // Create a clean update object with all required fields
@@ -259,48 +292,47 @@ async function onReorderEnd(event) {
           name: performer.name,
           club: performer.club,
           category_id: performer.category_id,
-          routine: performer.routine || ''
-        };
-        
-        console.log(`Updating performer ${performer.name} to order ${updateData.order}`);
-        
+          routine: performer.routine || '',
+        }
+
+        console.log(`Updating performer ${performer.name} to order ${updateData.order}`)
+
         // Update the local representation
-        performer.order = updateData.order;
-        
+        performer.order = updateData.order
+
         // Add to our batch of updates
         updatePromises.push(
-          updatePerformer(performer.id, updateData)
-            .catch(error => {
-              console.error(`Error updating performer ${performer.name}:`, error);
-              throw error;
-            })
-        );
+          updatePerformer(performer.id, updateData).catch(error => {
+            console.error(`Error updating performer ${performer.name}:`, error)
+            throw error
+          })
+        )
       }
     }
-    
+
     // Wait for all updates to complete
     if (updatePromises.length > 0) {
-      await Promise.all(updatePromises);
-      console.log(`Updated the order of ${updatePromises.length} performers successfully`);
+      await Promise.all(updatePromises)
+      console.log(`Updated the order of ${updatePromises.length} performers successfully`)
     } else {
-      console.log('No performer order changes were needed');
+      console.log('No performer order changes were needed')
     }
-    
+
     // Apply a tiny delay then run a refresh to ensure data consistency
     setTimeout(async () => {
       if (selectedCategory.value) {
-        console.log('Refreshing performers from server...');
-        await fetchPerformersForCategory(selectedCategory.value.id);
+        console.log('Refreshing performers from server...')
+        await fetchPerformersForCategory(selectedCategory.value.id)
       }
-    }, 300);
+    }, 300)
   } catch (err) {
-    error.value = `Failed to update performer order: ${err.message}`;
+    error.value = `Failed to update performer order: ${err.message}`
     // If there's an error, reset by reloading the performers
     if (selectedCategory.value) {
-      await fetchPerformersForCategory(selectedCategory.value.id);
+      await fetchPerformersForCategory(selectedCategory.value.id)
     }
   } finally {
-    performersLoading.value = false;
+    performersLoading.value = false
   }
 }
 
@@ -317,7 +349,7 @@ onMounted(async () => {
 })
 
 // Watch for changes to selected category to load its performers
-watch(selectedCategory, async (newCategory) => {
+watch(selectedCategory, async newCategory => {
   if (newCategory) {
     await fetchPerformersForCategory(newCategory.id)
   } else {
@@ -343,12 +375,12 @@ async function fetchPerformersForCategory(categoryId) {
     performers.value = []
     // Then fetch fresh data
     const fetchedPerformers = await getPerformers(categoryId)
-    
+
     // Sort performers by order before assigning to ensure consistent order display
     const sortedFetchedPerformers = [...fetchedPerformers].sort((a, b) => {
       return Number(a.order || 0) - Number(b.order || 0)
     })
-    
+
     // Use assignment after fetch and sort to ensure reactivity
     performers.value = sortedFetchedPerformers
   } catch (err) {
@@ -375,7 +407,7 @@ function editCategory(category) {
 
 function cancelCategoryEdit() {
   resetCategoryForm()
-  
+
   // No need to refresh data as we haven't changed anything
 }
 
@@ -393,10 +425,10 @@ async function saveCategory(category) {
       const newCategory = await createCategory(category.name)
       categories.value.push(newCategory)
     }
-    
+
     // Close the form first for better UI responsiveness
     resetCategoryForm()
-    
+
     // Then refresh categories list
     await fetchCategories()
   } catch (err) {
@@ -412,17 +444,17 @@ function confirmDeleteCategory(category) {
       try {
         await deleteCategory(category.id)
         categories.value = categories.value.filter(c => c.id !== category.id)
-        
+
         // If the deleted category was selected, clear selection
         if (selectedCategory.value && selectedCategory.value.id === category.id) {
           selectedCategory.value = null
         }
-        
+
         showConfirmationDialog.value = false
       } catch (err) {
         error.value = err.message
       }
-    }
+    },
   }
   showConfirmationDialog.value = true
 }
@@ -430,8 +462,8 @@ function confirmDeleteCategory(category) {
 // Performer CRUD operations
 function editPerformer(performer) {
   // Create a copy of the performer
-  const performerData = { 
-    ...performer
+  const performerData = {
+    ...performer,
   }
   performerForm.value = performerData
   isEditingPerformer.value = true
@@ -440,7 +472,7 @@ function editPerformer(performer) {
 
 async function cancelPerformerEdit() {
   resetPerformerForm()
-  
+
   // Refresh the performer list when modal is closed to ensure up-to-date data
   if (selectedCategory.value) {
     await fetchPerformersForCategory(selectedCategory.value.id)
@@ -454,7 +486,7 @@ function resetPerformerForm() {
     name: '',
     club: '',
     routine: '',
-    category_id: selectedCategory.value ? selectedCategory.value.id : ''
+    category_id: selectedCategory.value ? selectedCategory.value.id : '',
   }
   // Close modal by setting both flags to false
   isEditingPerformer.value = false
@@ -464,19 +496,19 @@ function resetPerformerForm() {
 async function savePerformer(performer) {
   try {
     // Make a copy of the performer data
-    let performerData = { ...performer };
-    
+    let performerData = { ...performer }
+
     if (!isEditingPerformer.value) {
       // For new performers, calculate the next order number (highest + 1)
       const highestOrder = performers.value.reduce((max, p) => {
-        const currentOrder = parseInt(p.order || 0);
-        return currentOrder > max ? currentOrder : max;
-      }, 0);
-      
+        const currentOrder = parseInt(p.order || 0)
+        return currentOrder > max ? currentOrder : max
+      }, 0)
+
       // Set order field
-      performerData.order = String(highestOrder + 1);
+      performerData.order = String(highestOrder + 1)
     }
-    
+
     if (isEditingPerformer.value) {
       // Ensure we use the correct format when updating a performer
       await updatePerformer(performerData.id, {
@@ -484,15 +516,15 @@ async function savePerformer(performer) {
         name: performerData.name,
         club: performerData.club,
         category_id: performerData.category_id,
-        routine: performerData.routine || ''
+        routine: performerData.routine || '',
       })
     } else {
       await createPerformer(performerData)
     }
-    
+
     // First close the form to improve UI responsiveness
     resetPerformerForm()
-    
+
     // Then refresh performers list
     if (selectedCategory.value) {
       await fetchPerformersForCategory(selectedCategory.value.id)
@@ -514,12 +546,10 @@ function confirmDeletePerformer(performer) {
       } catch (err) {
         error.value = err.message
       }
-    }
+    },
   }
   showConfirmationDialog.value = true
 }
-
-
 </script>
 
 <style scoped>
@@ -777,7 +807,8 @@ function confirmDeletePerformer(performer) {
   background-color: #f0f4f8;
 }
 
-.no-performers, .no-selection {
+.no-performers,
+.no-selection {
   padding: 32px;
   text-align: center;
   color: #666;
@@ -857,6 +888,33 @@ input:focus {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Navigation Links */
+.navigation-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  justify-content: center;
+}
+
+.nav-link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.nav-link:hover {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
 /* Message and Loading Styles */
 .error-message {
   padding: 16px;
@@ -897,14 +955,20 @@ input:focus {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Animation transitions */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 .fade-enter-from,
@@ -918,37 +982,37 @@ input:focus {
   .data-panels {
     grid-template-columns: 1fr;
   }
-  
+
   .data-container h1 {
     font-size: 1.8rem;
   }
-  
+
   .panel h2 {
     font-size: 1.5rem;
   }
-  
+
   .performers-table {
     font-size: 0.9rem;
   }
-  
+
   .performers-table th,
   .performers-table td {
     padding: 10px 8px;
   }
-  
+
   .routine-column,
   .routine-cell {
     display: none; /* Hide the routine column on small screens */
   }
-  
+
   .order-column {
     width: 30px;
   }
-  
+
   .handle-column {
     width: 25px;
   }
-  
+
   .actions-column {
     width: 80px;
   }
@@ -959,22 +1023,32 @@ input:focus {
   .club-cell {
     display: none; /* Hide the club column on very small screens */
   }
-  
+
   .performers-table th,
   .performers-table td {
     padding: 8px 6px;
   }
-  
+
   .order-column {
     width: 25px;
   }
-  
+
   .handle-column {
     width: 20px;
   }
-  
-  .actions-column {
-    width: 70px;
+}
+
+/* Responsive styles for navigation links */
+@media (max-width: 600px) {
+  .navigation-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
