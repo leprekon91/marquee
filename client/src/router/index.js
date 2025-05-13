@@ -20,6 +20,11 @@ const routes = [
     name: 'display',
     component: () => import('../components/Display.vue'),
   },
+  {
+    path: '/data',
+    name: 'data',
+    component: () => import('../components/Data.vue'),
+  }
 ]
 
 // Create the router instance
