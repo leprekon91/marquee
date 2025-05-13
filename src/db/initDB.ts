@@ -18,7 +18,7 @@ export function initPerformersTable(db: Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS performers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      "order" TEXT UNIQUE NOT NULL,
+      "order" TEXT NOT NULL,
       name TEXT NOT NULL,
       club TEXT,
       category_id INTEGER,

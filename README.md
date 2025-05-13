@@ -249,7 +249,7 @@ Creates a new performer.
 **Request Body**:
 ```json
 {
-  "number": "3",
+  "order": "3",
   "name": "Jane Doe",
   "club": "Dance Academy",
   "category_id": "2",
@@ -283,7 +283,7 @@ Updates an existing performer.
 **Request Body**:
 ```json
 {
-  "number": "3",
+  "order": "3",
   "name": "Jane Doe",
   "club": "Modern Dance Academy",
   "category_id": "2",

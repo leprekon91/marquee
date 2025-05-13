@@ -1,6 +1,7 @@
 // CRUD for categories table
 import { Database } from 'better-sqlite3';
 import { Category } from '../types/performers';
+import * as performerService from './performerService';
 import { getDB } from '../db/database';
 
 // Function to get all categories
@@ -51,5 +52,6 @@ export function deleteCategory(id: string): boolean {
     const db: Database = getDB();
     const stmt = db.prepare('DELETE FROM categories WHERE id = ?');
     const info = stmt.run(id);
+    performerService.deletePerformersByCategoryId(id); // Delete performers associated with the category
     return info.changes > 0; // Return true if a category was deleted
 }

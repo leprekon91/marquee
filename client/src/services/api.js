@@ -358,7 +358,7 @@ export async function getPerformer(id) {
 /**
  * Create a new performer
  * @param {Object} performer - The performer data
- * @param {string} performer.number - The performer's number
+ * @param {string} performer.order - The performer's order
  * @param {string} performer.name - The performer's name
  * @param {string} performer.club - The performer's club
  * @param {string} performer.category_id - The performer's category ID
@@ -391,7 +391,7 @@ export async function createPerformer(performer) {
  * Update a performer
  * @param {string} id - The ID of the performer to update
  * @param {Object} performer - The updated performer data
- * @param {string} performer.number - The performer's number
+ * @param {string} performer.order - The performer's order
  * @param {string} performer.name - The performer's name
  * @param {string} performer.club - The performer's club
  * @param {string} performer.category_id - The performer's category ID
@@ -400,6 +400,14 @@ export async function createPerformer(performer) {
  */
 export async function updatePerformer(id, performer) {
   try {
+    console.log('Sending update for performer:', id, performer);
+    
+    // Ensure we have all required fields
+    if (!performer.order || !performer.name || !performer.club || !performer.category_id) {
+      console.error('Missing required fields for performer update:', performer);
+      throw new Error('Required fields missing: order, name, club, and category_id are required');
+    }
+    
     const response = await fetch(`/api/performers/${id}`, {
       method: 'PATCH',
       headers: {
@@ -409,14 +417,23 @@ export async function updatePerformer(id, performer) {
     })
     
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || `Failed to update performer: ${response.status}`)
+      // Try to parse error JSON, but fallback if it's not valid JSON
+      let errorMessage;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || `Failed to update performer: ${response.status}`;
+      } catch (jsonError) {
+        errorMessage = `Failed to update performer: ${response.status}`;
+      }
+      
+      console.error(`Error updating performer ${id}:`, errorMessage);
+      throw new Error(errorMessage);
     }
     
     return await response.json()
   } catch (error) {
-    console.error('Error updating performer:', error)
-    throw error
+    console.error(`Error updating performer ${id}:`, error);
+    throw error;
   }
 }
 

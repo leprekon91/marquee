@@ -22,7 +22,7 @@ export function getPerformerById(id: string): Performer | null {
 // Function to get all performers by category ID
 export function getPerformersByCategoryId(categoryId: string): Performer[] {
     const db: Database = getDB();
-    const stmt = db.prepare('SELECT * FROM performers WHERE category_id = ?');
+    const stmt = db.prepare('SELECT * FROM performers WHERE category_id = ? ORDER BY "order"');
     const performers: Performer[] = stmt.all(categoryId) as Performer[];
     return performers;
 }
@@ -74,6 +74,13 @@ export function updatePerformer(id: string, order: string, name: string, club: s
 export function deletePerformer(id: string): boolean {
     const db: Database = getDB();
     const stmt = db.prepare('DELETE FROM performers WHERE id = ?');
+    const info = stmt.run(id);
+    return info.changes > 0; // Return true if a performer was deleted
+}
+
+export function deletePerformersByCategoryId(id: string) {
+    const db: Database = getDB();
+    const stmt = db.prepare('DELETE FROM performers WHERE category_id = ?');
     const info = stmt.run(id);
     return info.changes > 0; // Return true if a performer was deleted
 }

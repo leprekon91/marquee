@@ -50,18 +50,18 @@ export function getPerformer(req: Request, res: Response): void {
 // Function to create a new performer
 export function createPerformer(req: Request, res: Response): void {
     try {
-        const { number, name, club, category_id, routine } = req.body;
+        const { order, name, club, category_id, routine } = req.body;
         
         // Check for required fields
-        if (!number || !name || !club || !category_id) {
-            res.status(400).json({ error: 'Number, name, club, and category_id are required' });
+        if (!order || !name || !club || !category_id) {
+            res.status(400).json({ error: 'Order, name, club, and category_id are required' });
             return;
         }
         
         // Default routine to empty string if not provided
         const performerRoutine = routine || '';
         
-        const newPerformer = addPerformer(number, name, club, category_id, performerRoutine);
+        const newPerformer = addPerformer(order, name, club, category_id, performerRoutine);
         res.status(201).json(newPerformer);
     } catch (error) {
         if (error instanceof Error && error.message === 'Category does not exist') {
@@ -76,18 +76,18 @@ export function createPerformer(req: Request, res: Response): void {
 export function patchPerformer(req: Request, res: Response): void {
     try {
         const { id } = req.params;
-        const { number, name, club, category_id, routine } = req.body;
+        const { order, name, club, category_id, routine } = req.body;
         
         // Check for required fields
-        if (!number || !name || !club || !category_id) {
-            res.status(400).json({ error: 'Number, name, club, and category_id are required' });
+        if (!order || !name || !club || !category_id) {
+            res.status(400).json({ error: 'Order, name, club, and category_id are required' });
             return;
         }
         
         // Default routine to empty string if not provided
         const performerRoutine = routine || '';
         
-        const updatedPerformer = updatePerformer(id, number, name, club, category_id, performerRoutine);
+        const updatedPerformer = updatePerformer(id, order, name, club, category_id, performerRoutine);
         
         if (!updatedPerformer) {
             res.status(404).json({ error: 'Performer not found' });
@@ -96,6 +96,7 @@ export function patchPerformer(req: Request, res: Response): void {
         
         res.json(updatedPerformer);
     } catch (error) {
+        console.log(error);
         if (error instanceof Error) {
             if (error.message === 'Category does not exist') {
                 res.status(400).json({ error: 'Invalid category ID' });
