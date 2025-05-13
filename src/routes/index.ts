@@ -1,8 +1,8 @@
 import express from 'express';
 import  {getSettings, setSetting, resetSettingsController} from '../controllers/settingsController';
 import { getPerformers, getPerformer, createPerformer, patchPerformer, removePerformer } from '../controllers/performersController';
-import { getCategory, getCategories, createCategory,removeCategory } from '../controllers/categoryController';
-import { retrieveDisplaySettings, advanceToNextPerformer, changeCategory, changeDisplayType } from '../controllers/displayController';
+import { getCategory, getCategories, createCategory, patchCategory, removeCategory } from '../controllers/categoryController';
+import { retrieveDisplaySettings, advanceToNextPerformer, overrideCurrentPerformer, changeCategory, changeDisplayType } from '../controllers/displayController';
 const router = express.Router();
 
 // Health check route
@@ -19,6 +19,7 @@ router.post('/settings/reset', resetSettingsController);
 router.get('/categories', getCategories);
 router.get('/categories/:id', getCategory);
 router.post('/categories', createCategory);
+router.patch('/categories/:id', patchCategory);
 router.delete('/categories/:id', removeCategory);
 
 // performers routes
@@ -31,6 +32,7 @@ router.delete('/performers/:id', removePerformer);
 // display control routes
 router.get('/display', retrieveDisplaySettings);
 router.post('/display/next-performer', advanceToNextPerformer);
+router.post('/display/current-performer', overrideCurrentPerformer);
 router.post('/display/category/:categoryId', changeCategory);
 router.post('/display/type', changeDisplayType);
 

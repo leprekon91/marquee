@@ -25,8 +25,23 @@
       <div v-for="setting in settings" :key="setting.key" class="form-group">
         <label :for="setting.key">{{ formatSettingLabel(setting.key) }}</label>
 
+        <!-- Competition title/subtitle fields -->
+        <div v-if="setting.key === 'title' || setting.key === 'subtitle'" class="text-input-wrapper">
+          <input
+            type="text"
+            :id="setting.key"
+            v-model="setting.value"
+            @input="e => handleSettingChange(setting.key, e.target.value)"
+            :placeholder="setting.key === 'title' ? 'Enter competition title' : 'Enter competition subtitle'"
+            class="title-input"
+          />
+          <div class="text-preview" :style="{ fontFamily: getFontFamily() }">
+            {{ setting.value || (setting.key === 'title' ? 'Competition Title Preview' : 'Competition Subtitle Preview') }}
+          </div>
+        </div>
+
         <!-- Color picker for color settings -->
-        <div v-if="isColorSetting(setting.key)" class="color-picker-wrapper">
+        <div v-else-if="isColorSetting(setting.key)" class="color-picker-wrapper">
           <input
             type="color"
             :id="setting.key"
@@ -119,10 +134,12 @@ const debounce = (func, key, delay = 500) => {
 const orderSettings = settingsArray => {
   // Define a specific order for common settings
   const orderPriority = {
-    bg_color: 1,
-    text_color: 2,
-    font_size: 3,
-    font_family: 4,
+    title: 1,
+    subtitle: 2,
+    bg_color: 3,
+    text_color: 4,
+    font_size: 5,
+    font_family: 6,
   }
 
   // Sort the settings based on the defined order or alphabetically if not in the order list
@@ -142,7 +159,7 @@ const orderSettings = settingsArray => {
 
 // Filter out settings that shouldn't be displayed
 const filterSettings = settingsArray => {
-  const excludedSettings = ['current_category', 'current_performer', 'title', 'subtitle', 'current_display']
+  const excludedSettings = ['current_category', 'current_performer', 'current_display']
   return settingsArray.filter(setting => !excludedSettings.includes(setting.key))
 }
 
@@ -247,6 +264,12 @@ const formatSettingLabel = key => {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
+}
+
+// Helper function to get font family for preview
+const getFontFamily = () => {
+  const fontFamilySetting = settings.value.find(s => s.key === 'font_family')
+  return fontFamilySetting ? fontFamilySetting.value : 'Arial, sans-serif'
 }
 </script>
 
@@ -443,6 +466,43 @@ input[type='color']::-moz-color-swatch {
 }
 
 .font-preview {
+  padding: 10px;
+  text-align: center;
+  font-size: 1.2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-top: 8px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Title and subtitle input styling */
+.text-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.text-preview {
   padding: 10px;
   text-align: center;
   font-size: 1.2rem;
@@ -679,6 +739,35 @@ input[type='color']::-moz-color-swatch {
   input[type='range']::-moz-range-thumb {
     width: 26px;
     height: 26px;
+  }
+  
+  /* Title/subtitle text input styling */
+  .text-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .title-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .text-preview {
+    padding: 10px 12px;
+    background-color: #f0f4f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 }
 </style>

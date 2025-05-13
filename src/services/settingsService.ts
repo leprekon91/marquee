@@ -49,8 +49,6 @@ export function resetSettings(): void {
     SettingKey.CURRENT_DISPLAY,
     SettingKey.CURRENT_CATEGORY,
     SettingKey.CURRENT_PERFORMER,
-    SettingKey.TITLE,
-    SettingKey.SUBTITLE,
   ];
   // Create proper placeholders for each key
   const placeholders = ignoredKeys.map(() => '?').join(', ');
