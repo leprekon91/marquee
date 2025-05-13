@@ -3,16 +3,8 @@
 </script>
 
 <template>
-  <div class="app">
-    
-    
-    <!-- This is where components matched by the route will be rendered -->
-    <main>
-      <router-view />
-    </main>
-  </div>
+  <!-- This is where components matched by the route will be rendered -->
+  <router-view />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

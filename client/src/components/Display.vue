@@ -85,6 +85,7 @@ export default {
       currentCategory: null,
     }
   },
+
   mounted() {
     this.fetchSettings()
 
@@ -93,12 +94,14 @@ export default {
       this.fetchSettings()
     }, 1000)
   },
+
   beforeUnmount() {
     // Clear interval when component is destroyed
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval)
     }
   },
+
   methods: {
     async fetchSettings() {
       try {
@@ -137,13 +140,7 @@ export default {
         this.error = null
       } catch (err) {
         this.error = `Failed to load display data: ${err.message}`
-        
       }
-    },
-
-    // Manual refresh method - can be useful for debugging or adding a refresh button
-    forceRefresh() {
-      this.fetchSettings()
     },
   },
 }
@@ -152,13 +149,11 @@ export default {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition:
-    opacity 0.5s ease,
+  transition: opacity 0.5s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  
 }
 </style>
