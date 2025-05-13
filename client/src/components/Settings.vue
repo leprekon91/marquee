@@ -2,28 +2,39 @@
   <div class="settings-container">
     <h1>Settings</h1>
 
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
+    <transition name="fade">
+      <div v-if="error" class="error-message">
+        <i class="icon">⚠️</i>
+        {{ error }}
+      </div>
+    </transition>
 
-    <div v-if="showMessage" class="success-message">
-      {{ message }}
-    </div>
+    <transition name="fade">
+      <div v-if="showMessage" class="success-message">
+        <i class="icon">✓</i>
+        {{ message }}
+      </div>
+    </transition>
 
-    <div v-if="loading" class="loading">Loading settings...</div>
+    <div v-if="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <span>Loading settings...</span>
+    </div>
 
     <form v-else class="settings-form">
       <div v-for="setting in settings" :key="setting.key" class="form-group">
         <label :for="setting.key">{{ formatSettingLabel(setting.key) }}</label>
 
         <!-- Color picker for color settings -->
-        <input
-          v-if="isColorSetting(setting.key)"
-          type="color"
-          :id="setting.key"
-          v-model="setting.value"
-          @input="e => handleSettingChange(setting.key, e.target.value)"
-        />
+        <div v-if="isColorSetting(setting.key)" class="color-picker-wrapper">
+          <input
+            type="color"
+            :id="setting.key"
+            v-model="setting.value"
+            @input="e => handleSettingChange(setting.key, e.target.value)"
+          />
+          <span class="color-value">{{ setting.value }}</span>
+        </div>
 
         <!-- Font size input -->
         <div v-else-if="setting.key === 'font_size'" class="font-size-control">
@@ -40,19 +51,23 @@
         </div>
 
         <!-- Font family select -->
-        <select
-          v-else-if="setting.key === 'font_family'"
-          :id="setting.key"
-          v-model="setting.value"
-          @input="e => handleSettingChange(setting.key, e.target.value)"
-        >
-          <option value="Arial, sans-serif">Arial</option>
-          <option value="Times New Roman, serif">Times New Roman</option>
-          <option value="Courier New, monospace">Courier New</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="Verdana, sans-serif">Verdana</option>
-          <option value="Impact, sans-serif">Impact</option>
-        </select>
+        <div v-else-if="setting.key === 'font_family'" class="font-family-wrapper">
+          <select
+            :id="setting.key"
+            v-model="setting.value"
+            @change="e => handleSettingChange(setting.key, e.target.value)"
+          >
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Times New Roman, serif">Times New Roman</option>
+            <option value="Courier New, monospace">Courier New</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="Impact, sans-serif">Impact</option>
+          </select>
+          <div class="font-preview" :style="{ fontFamily: setting.value }">
+            Sample Text
+          </div>
+        </div>
 
         <!-- Text input for other settings -->
         <input
@@ -66,6 +81,7 @@
 
       <div class="form-actions">
         <button type="button" @click="handleResetSettings" class="reset-button">
+          <span class="reset-icon">↺</span>
           Reset to Default Values
         </button>
       </div>
@@ -239,98 +255,430 @@ const formatSettingLabel = key => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+  color: #333;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.settings-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid #eaeaea;
+  padding-bottom: 0.75rem;
 }
 
 .settings-form {
   display: grid;
-  gap: 20px;
+  gap: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.75rem;
+  position: relative;
+  padding: 1rem;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  background-color: #f9fafc;
+  border: 1px solid #edf2f7;
+}
+
+.form-group:hover {
+  background-color: #f0f4f8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
 }
 
 label {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c3e50;
 }
 
 input,
 select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
 }
 
-input[type='color'] {
-  height: 40px;
-  cursor: pointer;
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-.font-size-control {
+/* Color picker styling */
+.color-picker-wrapper {
   display: flex;
   align-items: center;
   gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type='color'] {
+  height: 50px;
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 2px;
+  flex: 0 0 100px;
+  max-width: 100px;
+  min-width: 80px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Prevent Firefox custom color picker */
+input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 6px;
+}
+
+input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+input[type='color']::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.color-value {
+  font-family: monospace;
+  padding: 8px 12px;
+  background: #f1f1f1;
+  border-radius: 6px;
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Font size control */
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .font-size-control input[type='range'] {
-  flex-grow: 1;
-  width: 100%;
+  flex: 1;
+  width: auto;
+  min-width: 0; /* Important for preventing overflow */
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 6px;
+  background: linear-gradient(to right, #3498db, #2ecc71);
+  margin: 0;
+  padding: 0;
+}
+
+.font-size-control input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #3498db;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.font-size-control input[type='range']::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #3498db;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .font-size-value {
-  min-width: 45px;
-  text-align: right;
+  min-width: 60px;
+  text-align: center;
   font-weight: 600;
-  color: #444;
+  color: #333;
+  font-size: 1.1rem;
+  background-color: #f2f2f2;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* Font family styling */
+.font-family-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.font-family-wrapper select {
+  width: 100%;
+}
+
+.font-preview {
+  padding: 10px;
+  text-align: center;
+  font-size: 1.2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-top: 8px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .form-actions {
-  margin-top: 20px;
+  margin-top: 2rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  padding-top: 1.5rem;
+  border-top: 2px solid #eaeaea;
 }
 
 .reset-button {
   background-color: #f44336;
   color: white;
-  padding: 10px 15px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(244, 67, 54, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .reset-button:hover {
   background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.reset-button:active {
+  transform: translateY(0);
+}
+
+.reset-icon {
+  display: inline-block;
+  font-size: 1.2rem;
+}
+
+.error-message, .success-message {
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .error-message {
   background-color: #ffebee;
   color: #c62828;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  border-left: 4px solid #c62828;
+  border-left: 5px solid #c62828;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.1);
 }
 
 .success-message {
   background-color: #e8f5e9;
   color: #2e7d32;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  border-left: 4px solid #2e7d32;
+  border-left: 5px solid #2e7d32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
+}
+
+.icon {
+  font-size: 1.5rem;
 }
 
 .loading {
-  text-align: center;
-  padding: 20px;
-  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
   color: #666;
+  font-size: 1.1rem;
+  gap: 15px;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #3498db;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Animation transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 600px) {
+  .settings-container {
+    padding: 10px 5px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .settings-container h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .settings-form {
+    padding: 1rem;
+    gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    border-radius: 8px;
+  }
+
+  .form-group {
+    padding: 1rem;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  label {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  /* Font size control - keep horizontal but improve sizing */
+  .font-size-control {
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .font-size-control input[type='range'] {
+    height: 10px; /* Thicker slider for easier mobile tapping */
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .font-size-value {
+    min-width: 60px;
+    padding: 10px;
+    font-size: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Color picker improvements */
+  .color-picker-wrapper {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    gap: 15px;
+  }
+
+  input[type='color'] {
+    flex: 0 0 80px;
+    height: 50px;
+    min-width: 80px;
+  }
+
+  .color-value {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  /* Font family improvements */
+  .font-family-wrapper select {
+    padding: 12px;
+    height: 50px; /* Taller for touch */
+    font-size: 1rem;
+  }
+
+  .font-preview {
+    height: 55px;
+    font-size: 1.1rem;
+  }
+
+  .reset-button {
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Ensure inputs fill the width */
+  input, select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px; /* Larger touch targets */
+    font-size: 16px; /* Prevent zooming on iOS */
+  }
+  
+  /* Fix for Safari mobile which may have slider issues */
+  input[type='range']::-webkit-slider-thumb {
+    width: 26px;
+    height: 26px;
+  }
+  
+  input[type='range']::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+  }
 }
 </style>

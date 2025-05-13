@@ -12,7 +12,6 @@ export function getSettings(req: Request, res: Response): void {
 
 // Function to set a setting
 export function setSetting(req: Request, res: Response): void {
-    console.log('Setting:', req.body);
   const { key, value } = req.body;
 
   if (!key || !value) {
@@ -24,7 +23,7 @@ export function setSetting(req: Request, res: Response): void {
     res.status(400).json({ error: 'Invalid setting key' });
     return;
   }
-  
+
   settingsService.setSetting(key, value);
   res.json({ message: 'Setting updated successfully' });
 }
