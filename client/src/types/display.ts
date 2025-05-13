@@ -25,6 +25,8 @@ export interface Performer {
   subtitle?: string;
   category_id: string;
   order: string;
+  club?: string;
+  routine?: string;
 }
 
 /**

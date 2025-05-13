@@ -27,8 +27,6 @@
     >
       <!-- Category display - Only show in performer mode -->
       <div v-if="settings.displayType === 'performer' && currentCategory" class="mb-6">
-        <h2 class="text-2xl sm:text-3xl mb-2">Current Category</h2>
-
         <div class="p-4 rounded-lg">
           <p class="text-3xl sm:text-4xl font-bold">
             {{ currentCategory.name || 'No Category' }}
@@ -48,6 +46,12 @@
             <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-4">
               {{ currentPerformer.name || 'No Performer' }}
             </h1>
+            <p v-if="currentPerformer.club" class="text-2xl sm:text-3xl mb-3">
+              {{ currentPerformer.club }}
+            </p>
+            <p v-if="currentPerformer.routine" class="text-xl sm:text-2xl mb-2">
+              {{ currentPerformer.routine }}
+            </p>
             <p v-if="currentPerformer.description" class="text-xl sm:text-2xl">
               {{ currentPerformer.description }}
             </p>
