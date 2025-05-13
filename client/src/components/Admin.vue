@@ -10,14 +10,6 @@
       </div>
     </transition>
 
-    <!-- Success messages -->
-    <transition name="fade">
-      <div v-if="successMessage" class="success-message">
-        <span class="icon">✓</span>
-        <span>{{ successMessage }}</span>
-      </div>
-    </transition>
-
     <!-- Loading indicator -->
     <div v-if="loading" class="loading">
       <div class="loading-spinner"></div>
@@ -193,8 +185,6 @@ export default {
     return {
       loading: true,
       error: null,
-      successMessage: null,
-      messageTimeout: null,
       
       // Display settings
       displayType: 'title',
@@ -373,20 +363,11 @@ export default {
     },
     
     /**
-     * Show a success message and clear it after a delay
+     * Success message handler (removed)
      */
     showSuccessMessage(message) {
-      this.successMessage = message;
-      
-      // Clear any existing timeout
-      if (this.messageTimeout) {
-        clearTimeout(this.messageTimeout);
-      }
-      
-      // Set a new timeout to clear the message
-      this.messageTimeout = setTimeout(() => {
-        this.successMessage = null;
-      }, 3000);
+      // Success messages removed
+      console.log(message);
     },
   }
 }
@@ -683,26 +664,16 @@ h3 {
 }
 
 /* Messages */
-.error-message,
-.success-message {
+.error-message {
   padding: 1rem;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.error-message {
   background-color: #f8d7da;
   color: #842029;
   border: 1px solid #f5c2c7;
-}
-
-.success-message {
-  background-color: #d1e7dd;
-  color: #0f5132;
-  border: 1px solid #badbcc;
 }
 
 .icon {

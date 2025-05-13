@@ -9,13 +9,6 @@
       </div>
     </transition>
 
-    <transition name="fade">
-      <div v-if="showMessage" class="success-message">
-        <i class="icon">✓</i>
-        {{ message }}
-      </div>
-    </transition>
-
     <div v-if="loading" class="loading">
       <div class="loading-spinner"></div>
       <span>Loading settings...</span>
@@ -116,9 +109,7 @@ import { getSettings, updateSetting, resetAllSettings } from '../services/api.js
 
 const settings = ref([])
 const loading = ref(true)
-const message = ref('')
 const error = ref('')
-const showMessage = ref(false)
 const debounceTimers = ref({})
 
 // Simple debounce function to delay API calls
@@ -252,11 +243,8 @@ const handleResetSettings = async () => {
 }
 
 const showSuccessMessage = msg => {
-  message.value = msg
-  showMessage.value = true
-  setTimeout(() => {
-    showMessage.value = false
-  }, 3000)
+  // Success messages removed
+  console.log(msg)
 }
 
 // Helper function to determine if a setting is a color
@@ -561,7 +549,7 @@ input[type='color']::-moz-color-swatch {
   font-size: 1.2rem;
 }
 
-.error-message, .success-message {
+.error-message {
   padding: 16px;
   margin-bottom: 20px;
   border-radius: 10px;
@@ -569,20 +557,10 @@ input[type='color']::-moz-color-swatch {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.error-message {
   background-color: #ffebee;
   color: #c62828;
   border-left: 5px solid #c62828;
   box-shadow: 0 2px 8px rgba(198, 40, 40, 0.1);
-}
-
-.success-message {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-left: 5px solid #2e7d32;
-  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
 }
 
 .icon {
