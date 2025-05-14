@@ -127,3 +127,4 @@ export function removePerformer(req: Request, res: Response): void {
         res.status(500).json({ error: 'Failed to delete performer' });
     }
 }
+
