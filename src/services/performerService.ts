@@ -2,6 +2,8 @@ import { Database } from 'better-sqlite3';
 import { Performer } from '../types/performers';
 import { getDB } from '../db/database';
 import { getCategoryById } from './categoryService';
+import { setSetting } from './settingsService';
+import { SettingKey } from '../types/settings';
 
 // Function to get all performers
 export function getAllPerformers(): Performer[] {
@@ -110,12 +112,23 @@ export function importPerformers(
     routine: string;
   }[],
 ) {
+  // delete all performers
+  const db: Database = getDB();
+  const deleteStmt = db.prepare('DELETE FROM performers');
+  deleteStmt.run();
+  // delete all categories
+  const deleteCategoryStmt = db.prepare('DELETE FROM categories');
+  deleteCategoryStmt.run();
+  // reset CURRENT_PERFORMER and CURRENT_CATEGORY settings
+  setSetting(SettingKey.CURRENT_DISPLAY, 'title');
+  setSetting(SettingKey.CURRENT_PERFORMER, 0);
+  setSetting(SettingKey.CURRENT_CATEGORY, 0);
+
   // get all unique category names
   const categories = performers.map((performer) => performer.categoryName);
   const uniqueCategories = [...new Set(categories)];
 
   // insert unique categories into the database
-  const db: Database = getDB();
   const insertCategoryStmt = db.prepare('INSERT INTO categories (name) VALUES (?)');
 
   const categoryIds: { [key: string]: number } = {};
@@ -128,7 +141,6 @@ export function importPerformers(
   const insertPerformerStmt = db.prepare(
     'INSERT INTO performers (name,order, club, category_id, routine) VALUES (?, ?, ?, ?)',
   );
-
 
   performers.forEach((performer) => {
     const categoryId = categoryIds[performer.categoryName];
