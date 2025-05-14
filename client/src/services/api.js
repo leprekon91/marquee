@@ -227,6 +227,52 @@ export async function uploadLogo(formData) {
 }
 
 /**
+ * Import performers from a CSV file
+ * @param {File} file - The CSV file to upload
+ * @returns {Promise<Object>} The response message
+ */
+export async function importPerformersFromCsv(file) {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await fetch('/api/performers/import-csv', {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to import performers')
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Error importing performers from CSV:', error)
+    throw error
+  }
+}
+
+/**
+ * Export performers to a CSV file
+ * This will trigger a file download in the browser
+ */
+export function exportPerformersAsCsv() {
+  // Create a URL to the export endpoint
+  const exportUrl = '/api/performers/export-csv'
+  
+  // Create an anchor element to trigger the download
+  const link = document.createElement('a')
+  link.href = exportUrl
+  link.download = 'performers-export.csv'
+  
+  // Append to body, click and remove
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+/**
  * Get all categories
  * @returns {Promise<Array>} Array of category objects
  */

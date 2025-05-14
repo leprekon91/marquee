@@ -139,7 +139,7 @@ export function importPerformers(
 
   // insert performers into the database
   const insertPerformerStmt = db.prepare(
-    'INSERT INTO performers (name,order, club, category_id, routine) VALUES (?, ?, ?, ?)',
+    'INSERT INTO performers (name, "order", club, category_id, routine) VALUES (?, ?, ?, ?, ?)',
   );
 
   performers.forEach((performer) => {
@@ -156,4 +156,23 @@ export function importPerformers(
   });
 
   return true; // Return true if performers were imported successfully
+}
+
+export function exportPerformers(): {
+  name: string;
+  club: string;
+  categoryName: string;
+  routine: string;
+}[] {
+  const db: Database = getDB();
+  const stmt = db.prepare(
+    'SELECT performers.name, performers.club, categories.name as categoryName, performers.routine FROM performers JOIN categories ON performers.category_id = categories.id',
+  );
+  const performers = stmt.all() as {
+    name: string;
+    club: string;
+    categoryName: string;
+    routine: string;
+  }[];
+  return performers;
 }

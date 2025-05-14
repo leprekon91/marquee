@@ -21,7 +21,13 @@
       <div class="panel categories-panel">
         <div class="panel-header">
           <h2>Categories</h2>
-          <button @click="showAddCategoryForm = true" class="primary-button">Add Category</button>
+          <div class="panel-actions">
+            <button @click="showAddCategoryForm = true" class="primary-button">Add Category</button>
+            <div class="csv-actions">
+              <button @click="showImportCsvModal = true" class="secondary-button">Import</button>
+              <button @click="handleExportCsv" class="secondary-button">Export</button>
+            </div>
+          </div>
         </div>
 
         <div class="categories-list">
@@ -162,6 +168,13 @@
       @cancel="showConfirmationDialog = false"
     />
 
+    <!-- Import CSV Modal -->
+    <ImportCsvModal
+      v-model="showImportCsvModal"
+      @import-success="handleImportSuccess"
+      @import-error="handleImportError"
+    />
+
     <div class="navigation-links">
       <router-link to="/" class="nav-link">Admin</router-link>
       <router-link to="/settings" class="nav-link">Settings</router-link>
@@ -181,10 +194,13 @@ import {
   createPerformer,
   updatePerformer,
   deletePerformer,
+  importPerformersFromCsv,
+  exportPerformersAsCsv,
 } from '../services/api.js'
 import PerformerFormModal from './PerformerFormModal.vue'
 import CategoryFormModal from './CategoryFormModal.vue'
 import ConfirmationDialog from './ConfirmationDialog.vue'
+import ImportCsvModal from './ImportCsvModal.vue'
 import draggable from 'vuedraggable'
 
 // Register components
@@ -215,6 +231,9 @@ const performerForm = ref({
 })
 const isEditingPerformer = ref(false)
 const showAddPerformerForm = ref(false)
+
+// CSV import state
+const showImportCsvModal = ref(false)
 
 // Confirmation dialog state
 const showConfirmationDialog = ref(false)
@@ -550,6 +569,34 @@ function confirmDeletePerformer(performer) {
   }
   showConfirmationDialog.value = true
 }
+
+// CSV import handlers
+async function handleImportSuccess(result) {
+  // Refresh data after successful import
+  await fetchCategories()
+  error.value = ''
+
+  // Show success message
+  const message = `Successfully imported performers: ${result.message}`
+  alert(message)
+
+  // Clear the selected category since all data has been replaced
+  selectedCategory.value = null
+}
+
+function handleImportError(err) {
+  error.value = `Import failed: ${err.message}`
+}
+
+// Export CSV handler
+function handleExportCsv() {
+  try {
+    console.log('Exporting data to CSV...')
+    exportPerformersAsCsv()
+  } catch (err) {
+    error.value = `Failed to export data: ${err.message}`
+  }
+}
 </script>
 
 <style scoped>
@@ -609,12 +656,40 @@ function confirmDeletePerformer(performer) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .panel-header h2 {
   margin: 0;
   border-bottom: none;
   padding-bottom: 0;
+  font-size: 1.5rem;
+}
+
+/* Panel Header Actions Style */
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* CSV Action Buttons */
+.csv-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.panel-actions .primary-button,
+.panel-actions .secondary-button {
+  padding: 8px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.csv-actions .secondary-button {
+  min-width: 70px;
 }
 
 /* Categories Panel Styles */
@@ -1019,6 +1094,33 @@ input:focus {
 }
 
 @media (max-width: 480px) {
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .panel-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .csv-actions {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .panel-actions .primary-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .csv-actions .secondary-button {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-width: 60px;
+  }
+  
   .club-column,
   .club-cell {
     display: none; /* Hide the club column on very small screens */

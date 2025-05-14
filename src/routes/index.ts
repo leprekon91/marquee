@@ -4,7 +4,15 @@ import path from 'path';
 import fs from 'fs';
 import {getSettings, setSetting, resetSettingsController, uploadLogoController} from '../controllers/settingsController';
 import { Request, Response } from 'express';
-import { getPerformers, getPerformer, createPerformer, patchPerformer, removePerformer } from '../controllers/performersController';
+import { 
+  getPerformers, 
+  getPerformer, 
+  createPerformer, 
+  patchPerformer, 
+  removePerformer,
+  importPerformersFromCsv,
+  exportPerformersAsCsv
+} from '../controllers/performersController';
 import { getCategory, getCategories, createCategory, patchCategory, removeCategory } from '../controllers/categoryController';
 import { retrieveDisplaySettings, advanceToNextPerformer, overrideCurrentPerformer, changeCategory, changeDisplayType } from '../controllers/displayController';
 const router = express.Router();
@@ -25,6 +33,22 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     cb(null, 'logo-' + uniqueSuffix + ext);
+  }
+});
+
+// Configure multer for in-memory storage (for CSV files)
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    // Accept only CSV files
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'));
+    }
   }
 });
 
@@ -66,8 +90,10 @@ router.delete('/categories/:id', removeCategory);
 
 // performers routes
 router.get('/performers', getPerformers);
+router.get('/performers/export-csv', exportPerformersAsCsv);
 router.get('/performers/:id', getPerformer);
 router.post('/performers', createPerformer);
+router.post('/performers/import-csv', csvUpload.single('file'), importPerformersFromCsv);
 router.patch('/performers/:id', patchPerformer);
 router.delete('/performers/:id', removePerformer);
 
