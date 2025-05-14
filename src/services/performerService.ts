@@ -149,7 +149,7 @@ export function importPerformers(
       'SELECT MAX("order") as maxOrder FROM performers WHERE category_id = ?',
     );
     const { maxOrder } = maxOrderStmt.get(categoryId) as { maxOrder: number };
-    const order = maxOrder ? maxOrder + 1 : 1;
+    const order = maxOrder ? Number(maxOrder) + 1 : 1;
     if (categoryId) {
       insertPerformerStmt.run(performer.name, order, performer.club, categoryId, performer.routine);
     }

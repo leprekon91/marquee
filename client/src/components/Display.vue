@@ -229,7 +229,7 @@ export default {
 }
 
 .logo {
-  max-height: 80px;
+  max-height: 250px;
   max-width: 100%;
   object-fit: contain;
 }
