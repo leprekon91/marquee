@@ -33,6 +33,45 @@
           </div>
         </div>
 
+        <!-- Logo upload fields -->
+        <div v-else-if="isLogoSetting(setting.key)" class="logo-upload-wrapper">
+          <div class="logo-preview-container">
+            <img 
+              v-if="setting.value && isValidImagePath(setting.value)" 
+              :src="getLogoUrl(setting.value)" 
+              :alt="`${formatSettingLabel(setting.key)} logo`" 
+              class="logo-preview" 
+            />
+            <div v-else class="logo-placeholder">
+              No logo uploaded
+            </div>
+          </div>
+          
+          <div class="logo-upload-controls">
+            <label :for="`file-${setting.key}`" class="file-upload-button">
+              <span class="upload-icon">↑</span>
+              Upload Logo
+            </label>
+            <input
+              type="file"
+              :id="`file-${setting.key}`"
+              accept="image/png, image/jpeg, image/gif"
+              @change="e => handleLogoUpload(e, setting.key)"
+              class="file-input"
+            />
+            
+            <button 
+              v-if="setting.value" 
+              type="button" 
+              @click="handleLogoClear(setting.key)" 
+              class="clear-button"
+            >
+              <span class="clear-icon">✕</span>
+              Clear
+            </button>
+          </div>
+        </div>
+
         <!-- Color picker for color settings -->
         <div v-else-if="isColorSetting(setting.key)" class="color-picker-wrapper">
           <input
@@ -105,7 +144,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getSettings, updateSetting, resetAllSettings } from '../services/api.js'
+import { getSettings, updateSetting, resetAllSettings, uploadLogo } from '../services/api.js'
 
 const settings = ref([])
 const loading = ref(true)
@@ -133,10 +172,13 @@ const orderSettings = settingsArray => {
   const orderPriority = {
     title: 1,
     subtitle: 2,
-    bg_color: 3,
-    text_color: 4,
-    font_size: 5,
-    font_family: 6,
+    display_logo_left: 3,
+    display_logo_center: 4,
+    display_logo_right: 5,
+    bg_color: 6,
+    text_color: 7,
+    font_size: 8,
+    font_family: 9,
   }
 
   // Sort the settings based on the defined order or alphabetically if not in the order list
@@ -219,6 +261,96 @@ const handleSettingChange = async (key, value) => {
   } catch (err) {
     error.value = err.message
   }
+}
+
+// Handle logo file upload
+const handleLogoUpload = async (event, key) => {
+  try {
+    const file = event.target.files[0]
+    if (!file) return
+    
+    // Check file size (limit to 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      error.value = 'Logo file size must be less than 2MB'
+      return
+    }
+    
+    // Check file type
+    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+      error.value = 'Only JPEG, PNG, and GIF files are allowed'
+      return
+    }
+    
+    // Show loading indicator
+    loading.value = true
+    
+    // Create form data for the upload
+    const formData = new FormData()
+    formData.append('logo', file)
+    formData.append('key', key)
+    
+    // Upload the logo
+    const response = await uploadLogo(formData)
+    
+    // Update the setting with the new logo path
+    const settingIndex = settings.value.findIndex(s => s.key === key)
+    if (settingIndex !== -1) {
+      settings.value[settingIndex].value = response.path
+    }
+    
+    showSuccessMessage('Logo uploaded successfully')
+  } catch (err) {
+    error.value = `Failed to upload logo: ${err.message}`
+  } finally {
+    loading.value = false
+    // Reset the file input
+    event.target.value = ''
+  }
+}
+
+// Clear a logo
+const handleLogoClear = async (key) => {
+  try {
+    loading.value = true
+    // Update with empty string to clear the logo
+    await updateSetting(key, '')
+    
+    // Update the local state
+    const settingIndex = settings.value.findIndex(s => s.key === key)
+    if (settingIndex !== -1) {
+      settings.value[settingIndex].value = ''
+    }
+    
+    showSuccessMessage('Logo cleared successfully')
+  } catch (err) {
+    error.value = err.message
+  } finally {
+    loading.value = false
+  }
+}
+
+// Check if setting is for a logo
+const isLogoSetting = key => {
+  return key.includes('display_logo')
+}
+
+// Check if setting is a valid image path
+const isValidImagePath = (path) => {
+  return path && (
+    path.startsWith('/uploads/') || 
+    path.startsWith('http://') || 
+    path.startsWith('https://')
+  )
+}
+
+// Get the full URL for a logo path
+const getLogoUrl = (path) => {
+  // If it's already a full URL, return it
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  // Otherwise, assume it's a relative path on the server
+  return path
 }
 
 // Reset all settings to default values
@@ -510,6 +642,92 @@ input[type='color']::-moz-color-swatch {
   justify-content: center;
 }
 
+/* Logo upload styles */
+.logo-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.logo-preview-container {
+  height: 100px;
+  width: 100%;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+.logo-placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.logo-preview {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.logo-upload-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.file-upload-button {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.file-upload-button:hover {
+  background-color: #2980b9;
+}
+
+.upload-icon, .clear-icon {
+  font-size: 16px;
+}
+
+.file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.clear-button {
+  background-color: #e74c3c;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.clear-button:hover {
+  background-color: #c0392b;
+}
+
 .form-actions {
   margin-top: 2rem;
   display: flex;
@@ -793,6 +1011,23 @@ input[type='color']::-moz-color-swatch {
     text-align: center;
     transition: all 0.3s ease;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Logo upload improvements */
+  .logo-upload-wrapper {
+    flex-direction: column;
+  }
+  
+  .logo-upload-controls {
+    flex-direction: row;
+    width: 100%;
+  }
+  
+  .file-upload-button, .clear-button {
+    flex: 1;
+    justify-content: center;
+    padding: 12px;
+    font-size: 14px;
   }
 }
 </style>

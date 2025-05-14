@@ -1,9 +1,47 @@
 import express from 'express';
-import  {getSettings, setSetting, resetSettingsController} from '../controllers/settingsController';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import {getSettings, setSetting, resetSettingsController, uploadLogoController} from '../controllers/settingsController';
+import { Request, Response } from 'express';
 import { getPerformers, getPerformer, createPerformer, patchPerformer, removePerformer } from '../controllers/performersController';
 import { getCategory, getCategories, createCategory, patchCategory, removeCategory } from '../controllers/categoryController';
 import { retrieveDisplaySettings, advanceToNextPerformer, overrideCurrentPerformer, changeCategory, changeDisplayType } from '../controllers/displayController';
 const router = express.Router();
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
+    cb(null, uploadsDir);
+  },
+  filename: (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+    // Create a unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'logo-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit
+  },
+  fileFilter: (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    // Accept only images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -14,6 +52,10 @@ router.get('/health', (req, res) => {
 router.get('/settings', getSettings);
 router.post('/settings', setSetting);
 router.post('/settings/reset', resetSettingsController);
+router.post('/settings/upload-logo', upload.single('logo'), uploadLogoController);
+
+// Serve static files from uploads directory
+router.use('/uploads', express.static(uploadsDir));
 
 //category routes
 router.get('/categories', getCategories);

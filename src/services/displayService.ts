@@ -18,6 +18,9 @@ export function getDisplaySettings() {
     fontSize: currentSettings[SettingKey.FONT_SIZE],
     fontFamily: currentSettings[SettingKey.FONT_FAMILY],
     displayType: currentSettings[SettingKey.CURRENT_DISPLAY],
+    displayLogoLeft: currentSettings[SettingKey.DISPLAY_LOGO_LEFT],
+    displayLogoCenter: currentSettings[SettingKey.DISPLAY_LOGO_CENTER],
+    displayLogoRight: currentSettings[SettingKey.DISPLAY_LOGO_RIGHT],
   };
 
   switch (settings.displayType) {

@@ -25,6 +25,29 @@
       class="w-full max-w-5xl text-center"
       :style="{ fontSize: settings?.fontSize || '16px' }"
     >
+    
+      <!-- Logo bar - only show if at least one logo is present -->
+      <div class="logo-bar w-full flex justify-between items-center mb-4" 
+           v-if="isValidLogoPath(settings.logoLeft) || isValidLogoPath(settings.logoCenter) || isValidLogoPath(settings.logoRight)">
+        <!-- Left logo -->
+        <div class="logo-container" v-if="isValidLogoPath(settings.logoLeft)">
+          <img :src="getImageUrl(settings.logoLeft)" alt="Left logo" class="logo max-h-20" />
+        </div>
+        <div v-else class="logo-placeholder"></div>
+        
+        <!-- Center logo -->
+        <div class="logo-container" v-if="isValidLogoPath(settings.logoCenter)">
+          <img :src="getImageUrl(settings.logoCenter)" alt="Center logo" class="logo max-h-20" />
+        </div>
+        <div v-else class="logo-placeholder"></div>
+        
+        <!-- Right logo -->
+        <div class="logo-container" v-if="isValidLogoPath(settings.logoRight)">
+          <img :src="getImageUrl(settings.logoRight)" alt="Right logo" class="logo max-h-20" />
+        </div>
+        <div v-else class="logo-placeholder"></div>
+      </div>
+      
       <!-- Category display - Only show in performer mode -->
       <div v-if="settings.displayType === 'performer' && currentCategory" class="mb-6">
         <div class="p-4 rounded-lg">
@@ -87,6 +110,7 @@ export default {
       subtitle: null,
       currentPerformer: null,
       currentCategory: null,
+      showDebug: false // Set to true to show debugging information
     }
   },
 
@@ -100,7 +124,7 @@ export default {
   },
 
   beforeUnmount() {
-    // Clear interval when component is destroyed
+    // Clear the refresh interval when component is unmounted
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval)
     }
@@ -109,48 +133,116 @@ export default {
   methods: {
     async fetchSettings() {
       try {
-        const data = await getDisplaySettings()
+        const displayData = await getDisplaySettings()
 
-        if (data) {
-          // Create new local variables first before assigning to component data
-          // This forces Vue to detect the changes
-          let newSettings = null
-          let newTitle = null
-          let newSubtitle = null
-          let newPerformer = null
-          let newCategory = null
-
-          // Use type guards to handle the response appropriately
-          if (isTitleDisplayResponse(data)) {
-            newSettings = { ...data.settings }
-            newTitle = data.title || 'Competition Title'
-            newSubtitle = data.subtitle || 'Competition Subtitle'
-          }
-          // Performer display mode
-          else if (isPerformerDisplayResponse(data)) {
-            newSettings = { ...data.settings }
-            newPerformer = data.performer || null
-            newCategory = data.category || null
-          }
-
-          // Update all component data properties at once for better reactivity
-          this.settings = newSettings
-          this.title = newTitle
-          this.subtitle = newSubtitle
-          this.currentPerformer = newPerformer
-          this.currentCategory = newCategory
+        if (!displayData) {
+          console.error('Empty display data received')
+          return
         }
 
+        console.log('Display data received:', displayData)
+
+        // Store common settings
+        this.settings = {
+          bgColor: displayData.settings?.bgColor || '#000000',
+          textColor: displayData.settings?.textColor || '#FFFFFF',
+          fontSize: displayData.settings?.fontSize || '16px',
+          fontFamily: displayData.settings?.fontFamily || 'Arial, sans-serif',
+          displayType: displayData.settings?.displayType || 'title',
+          // Add logo fields
+          logoLeft: displayData.settings?.displayLogoLeft || '',
+          logoCenter: displayData.settings?.displayLogoCenter || '',
+          logoRight: displayData.settings?.displayLogoRight || '',
+        }
+
+        if (isTitleDisplayResponse(displayData)) {
+          // Process title display
+          this.title = displayData.title || 'Competition Title'
+          this.subtitle = displayData.subtitle || 'Competition Subtitle'
+          this.currentPerformer = null
+          this.currentCategory = null
+        } else if (isPerformerDisplayResponse(displayData)) {
+          // Process performer display
+          this.title = null
+          this.subtitle = null
+          this.currentPerformer = displayData.performer || null
+          this.currentCategory = displayData.category || null
+        } else {
+          console.error('Unknown display data format', displayData)
+        }
+
+        // Clear error if successful
         this.error = null
       } catch (err) {
-        this.error = `Failed to load display data: ${err.message}`
+        console.error('Error fetching display settings', err)
+        this.error = `Failed to retrieve display: ${err.message}`
       }
     },
-  },
+    
+    // Check if logo path is valid
+    isValidLogoPath(path) {
+      if (path) {
+        const isValid = path && (
+          path.startsWith('/uploads/') || 
+          path.startsWith('http://') || 
+          path.startsWith('https://')
+        );
+        return isValid;
+      }
+      return false;
+    },
+    
+    // Get proper URL for images, ensuring they're served from the correct location
+    getImageUrl(path) {
+      if (!path) return '';
+      
+      console.log('Getting image URL for:', path);
+      
+      // If path already includes the full URL, return it as is
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+      }
+      
+      // For development, use the Vite proxy
+      // For production, use the path as is
+      return path;
+    }
+  }
 }
 </script>
 
 <style scoped>
+.logo-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.logo-container {
+  flex: 0 0 30%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  max-height: 80px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.logo-placeholder {
+  flex: 0 0 30%;
+  height: 80px;
+}
+
+.debug-info {
+  font-family: monospace;
+  border-radius: 4px;
+}
 
 .fade-enter-active,
 .fade-leave-active {

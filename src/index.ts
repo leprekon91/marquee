@@ -47,6 +47,14 @@ if (NODE_ENV === 'development') {
   clientDistPath = path.resolve(__dirname, '../client/dist');
 }
 
+// Serve uploads directory at multiple paths to ensure compatibility
+const uploadsPath = path.resolve(process.cwd(), 'uploads');
+
+// Serve uploads at both /uploads and /api/uploads paths to ensure all URLs work
+app.use('/uploads', express.static(uploadsPath));
+app.use('/api/uploads', express.static(uploadsPath));
+
+
 // Serve static files from the Vue app build directory
 app.use(express.static(clientDistPath));
 

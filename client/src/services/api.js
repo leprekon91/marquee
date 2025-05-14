@@ -202,6 +202,31 @@ export async function resetAllSettings() {
 }
 
 /**
+ * Upload a logo image
+ * @param {FormData} formData - The form data containing the logo file and key
+ * @returns {Promise<Object>} The response with the path to the uploaded logo
+ */
+export async function uploadLogo(formData) {
+  try {
+    const response = await fetch('/api/settings/upload-logo', {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header, browser will set it with boundary for multipart/form-data
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `Failed to upload logo: ${response.status}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Error uploading logo:', error)
+    throw error
+  }
+}
+
+/**
  * Get all categories
  * @returns {Promise<Array>} Array of category objects
  */

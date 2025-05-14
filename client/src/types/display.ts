@@ -12,6 +12,9 @@ export interface DisplaySettings {
   fontSize: string;
   fontFamily: string;
   displayType: 'performer' | 'title';
+  displayLogoLeft?: string;
+  displayLogoCenter?: string;
+  displayLogoRight?: string;
 }
 
 /**
