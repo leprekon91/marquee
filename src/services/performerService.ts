@@ -14,7 +14,7 @@ export function getAllPerformers(): Performer[] {
 }
 
 // Function to get a performer by ID
-export function getPerformerById(id: string): Performer | null {
+export function getPerformerById(id: number): Performer | null {
   const db: Database = getDB();
   const stmt = db.prepare('SELECT * FROM performers WHERE id = ?');
   const performer: Performer | undefined = stmt.get(id) as Performer | undefined;

@@ -25,16 +25,16 @@ export function getDisplaySettings() {
 
   switch (settings.displayType) {
     case 'performer':
-      const performerId = currentSettings[SettingKey.CURRENT_PERFORMER];
-      const categoryId = currentSettings[SettingKey.CURRENT_CATEGORY];
+      const performerId = Number.parseInt(currentSettings[SettingKey.CURRENT_PERFORMER]);
+      const categoryId = Number.parseInt(currentSettings[SettingKey.CURRENT_CATEGORY]);
 
       const performer = getPerformerById(performerId);
-      if (!performer) {
+      if (performerId && !performer) {
         throw new Error('Performer not found');
       }
 
       const category = getCategoryById(categoryId);
-      if (!category) {
+      if (categoryId && !category) {
         throw new Error('Category not found');
       }
 
@@ -96,7 +96,7 @@ export function setNextPerformer() {
 }
 
 export function setCurrentPerformer(performerId: string) {
-  const performer = getPerformerById(performerId);
+  const performer = getPerformerById(Number.parseInt(performerId));
   if (!performer) {
     throw new Error('Performer not found');
   }

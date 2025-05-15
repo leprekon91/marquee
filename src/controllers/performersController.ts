@@ -36,7 +36,7 @@ export function getPerformers(req: Request, res: Response): void {
 export function getPerformer(req: Request, res: Response): void {
     try {
         const { id } = req.params;
-        const performer = getPerformerById(id);
+        const performer = getPerformerById(Number.parseInt(id));
         
         if (!performer) {
             res.status(404).json({ error: 'Performer not found' });

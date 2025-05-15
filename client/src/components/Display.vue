@@ -62,21 +62,18 @@
         <transition name="fade" mode="out-in">
           <!-- Performer Mode -->
           <div
-            v-if="settings.displayType === 'performer' && currentPerformer"
+            v-if="settings.displayType === 'performer'"
             :key="'performer-' + (currentPerformer ? currentPerformer.id : 'none')"
             class="p-8 rounded-lg"
           >
             <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-4">
-              {{ currentPerformer.name || 'No Performer' }}
+              {{ currentPerformer?.name || 'No Performer' }}
             </h1>
-            <p v-if="currentPerformer.club" class="text-2xl sm:text-3xl mb-3">
+            <p v-if="currentPerformer?.club" class="text-2xl sm:text-3xl mb-3">
               {{ currentPerformer.club }}
             </p>
-            <p v-if="currentPerformer.routine" class="text-xl sm:text-2xl mb-2">
+            <p v-if="currentPerformer?.routine" class="text-xl sm:text-2xl mb-2">
               {{ currentPerformer.routine }}
-            </p>
-            <p v-if="currentPerformer.description" class="text-xl sm:text-2xl">
-              {{ currentPerformer.description }}
             </p>
           </div>
 
