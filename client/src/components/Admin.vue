@@ -130,6 +130,7 @@
                   <th class="order-column">#</th>
                   <th class="name-column">Name</th>
                   <th class="club-column">Club</th>
+                 <th class="routine-column">Routine</th> 
                   <th class="action-column">Action</th>
                 </tr>
               </thead>
@@ -142,6 +143,7 @@
                   <td>{{ performer.order }}</td>
                   <td>{{ performer.name }}</td>
                   <td>{{ performer.club || '—' }}</td>
+                  <td>{{ performer.routine || '—' }}</td>
                   <td>
                     <button 
                       @click="selectPerformer(performer)" 
