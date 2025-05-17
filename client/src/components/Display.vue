@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center min-h-screen p-4"
+    class="display-main flex flex-col items-center justify-center min-h-screen p-4"
     :style="{
       backgroundColor: settings?.bgColor || '#000000',
       color: settings?.textColor || '#FFFFFF',
@@ -25,29 +25,34 @@
       class="w-full max-w-5xl text-center"
       :style="{ fontSize: settings?.fontSize || '16px' }"
     >
-    
       <!-- Logo bar - only show if at least one logo is present -->
-      <div class="logo-bar w-full flex justify-between items-center mb-4" 
-           v-if="isValidLogoPath(settings.logoLeft) || isValidLogoPath(settings.logoCenter) || isValidLogoPath(settings.logoRight)">
+      <div
+        class="logo-bar w-full flex justify-between items-center mb-4"
+        v-if="
+          isValidLogoPath(settings.logoLeft) ||
+          isValidLogoPath(settings.logoCenter) ||
+          isValidLogoPath(settings.logoRight)
+        "
+      >
         <!-- Left logo -->
         <div class="logo-container" v-if="isValidLogoPath(settings.logoLeft)">
           <img :src="getImageUrl(settings.logoLeft)" alt="Left logo" class="logo max-h-20" />
         </div>
         <div v-else class="logo-placeholder"></div>
-        
+
         <!-- Center logo -->
         <div class="logo-container" v-if="isValidLogoPath(settings.logoCenter)">
           <img :src="getImageUrl(settings.logoCenter)" alt="Center logo" class="logo max-h-20" />
         </div>
         <div v-else class="logo-placeholder"></div>
-        
+
         <!-- Right logo -->
         <div class="logo-container" v-if="isValidLogoPath(settings.logoRight)">
           <img :src="getImageUrl(settings.logoRight)" alt="Right logo" class="logo max-h-20" />
         </div>
         <div v-else class="logo-placeholder"></div>
       </div>
-      
+
       <!-- Category display - Only show in performer mode -->
       <div v-if="settings.displayType === 'performer' && currentCategory" class="mb-6">
         <div class="p-4 rounded-lg">
@@ -107,7 +112,7 @@ export default {
       subtitle: null,
       currentPerformer: null,
       currentCategory: null,
-      showDebug: false // Set to true to show debugging information
+      showDebug: false, // Set to true to show debugging information
     }
   },
 
@@ -175,40 +180,44 @@ export default {
         this.error = `Failed to retrieve display: ${err.message}`
       }
     },
-    
+
     // Check if logo path is valid
     isValidLogoPath(path) {
       if (path) {
-        const isValid = path && (
-          path.startsWith('/uploads/') || 
-          path.startsWith('http://') || 
-          path.startsWith('https://')
-        );
-        return isValid;
+        const isValid =
+          path &&
+          (path.startsWith('/uploads/') ||
+            path.startsWith('http://') ||
+            path.startsWith('https://'))
+        return isValid
       }
-      return false;
+      return false
     },
-    
+
     // Get proper URL for images, ensuring they're served from the correct location
     getImageUrl(path) {
-      if (!path) return '';
-      
-      console.log('Getting image URL for:', path);
-      
+      if (!path) return ''
+
+      console.log('Getting image URL for:', path)
+
       // If path already includes the full URL, return it as is
       if (path.startsWith('http://') || path.startsWith('https://')) {
-        return path;
+        return path
       }
-      
+
       // For development, use the Vite proxy
       // For production, use the path as is
-      return path;
-    }
-  }
+      return path
+    },
+  },
 }
 </script>
 
 <style scoped>
+.display-main {
+  cursor: none;
+}
+
 .logo-bar {
   display: flex;
   justify-content: space-between;
