@@ -92,24 +92,11 @@ fi
 
 # Install production dependencies
 echo "Installing dependencies..."
-npm install --production
+npm install --omit=dev
 
-# Setup systemd service
-cat > /etc/systemd/system/marquee.service << EOL
-[Unit]
-Description=Marquee Display System
-After=network.target
 
-[Service]
-Type=simple
-User=pi
-WorkingDirectory=$(pwd)
-ExecStart=$(which pm2) start npm --name "marquee" -- start
-Restart=on-failure
+$(which pm2) start npm --name "marquee" -- start
 
-[Install]
-WantedBy=multi-user.target
-EOL
 
 # Enable and start the service
 systemctl enable marquee.service
@@ -156,18 +143,11 @@ Once running, access the application at:
 
 All data is stored in the \`data\` directory using SQLite.
 
-## Starting/Stopping the Service
-
-- Start: \`sudo systemctl start marquee.service\`
-- Stop: \`sudo systemctl stop marquee.service\`
-- Restart: \`sudo systemctl restart marquee.service\`
-- Check status: \`sudo systemctl status marquee.service\`
-
 ## Troubleshooting
 
 Check logs with:
 \`\`\`
-journalctl -u marquee.service
+pm2 logs marquee
 \`\`\`
 `;
 

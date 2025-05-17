@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { initCategorysTable, initPerformersTable, initSettingsTable } from './initDB';
+import { logError } from '../middleware/errorHandler';
 
 // Use environment variable for database directory with fallback to project root
 const dbDir = process.env.DB_PATH 
@@ -28,7 +29,7 @@ export function getDB(): Database.Database {
       db.pragma('journal_mode = WAL');
       db.pragma('foreign_keys = ON');
     } catch (err) {
-      console.error('Failed to initialize database:', err);
+      logError(err instanceof Error ? err : new Error('Failed to initialize database'));
       throw err;
     }
   }
@@ -47,23 +48,32 @@ export function initDB(): void {
     
     console.log('Database initialized with path:', DB_PATH);
   } catch (err) {
-    console.error('Error initializing database schema:', err);
-    throw err;
+    const error = err instanceof Error ? err : new Error('Failed to initialize database schema');
+    logError(error);
+    throw error;
   }
 }
 
 // Close database connection when app is shutting down
 process.on('SIGINT', () => {
   if (db) {
-    db.close();
-    console.log('Database connection closed');
+    try {
+      db.close();
+      console.log('Database connection closed');
+    } catch (err) {
+      logError(err instanceof Error ? err : new Error('Error closing database connection'));
+    }
   }
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   if (db) {
-    db.close();
-    console.log('Database connection closed');
+    try {
+      db.close();
+      console.log('Database connection closed');
+    } catch (err) {
+      logError(err instanceof Error ? err : new Error('Error closing database connection'));
+    }
   }
 });

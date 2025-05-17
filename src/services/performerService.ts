@@ -2,7 +2,7 @@ import { Database } from 'better-sqlite3';
 import { Performer } from '../types/performers';
 import { getDB } from '../db/database';
 import { getCategoryById } from './categoryService';
-import { setSetting } from './settingsService';
+import { getSettingValue, setSetting } from './settingsService';
 import { SettingKey } from '../types/settings';
 
 // Function to get all performers
@@ -92,6 +92,12 @@ export function updatePerformer(
 // Function to delete a performer
 export function deletePerformer(id: string): boolean {
   const db: Database = getDB();
+
+  const currentPerformer = getSettingValue(SettingKey.CURRENT_PERFORMER);
+  if (currentPerformer === id) {
+    setSetting(SettingKey.CURRENT_PERFORMER, '0');
+  }
+
   const stmt = db.prepare('DELETE FROM performers WHERE id = ?');
   const info = stmt.run(id);
   return info.changes > 0; // Return true if a performer was deleted

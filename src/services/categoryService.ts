@@ -3,6 +3,8 @@ import { Database } from 'better-sqlite3';
 import { Category } from '../types/performers';
 import * as performerService from './performerService';
 import { getDB } from '../db/database';
+import { getSettingValue, setSetting } from './settingsService';
+import { SettingKey } from '../types/settings';
 
 // Function to get all categories
 export function getAllCategories(): Category[] {
@@ -50,6 +52,13 @@ export function updateCategory(id: string, name: string): Category | null {
 // Function to delete a category
 export function deleteCategory(id: string): boolean {
     const db: Database = getDB();
+    // if category is selected as current, set the current to 0
+    const currentCategory = getSettingValue(SettingKey.CURRENT_CATEGORY);
+    if (currentCategory === id) {
+        setSetting(SettingKey.CURRENT_CATEGORY, '0');
+        setSetting(SettingKey.CURRENT_PERFORMER, '0');
+    }
+
     const stmt = db.prepare('DELETE FROM categories WHERE id = ?');
     const info = stmt.run(id);
     performerService.deletePerformersByCategoryId(id); // Delete performers associated with the category

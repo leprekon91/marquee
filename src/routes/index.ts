@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import {getSettings, setSetting, resetSettingsController, uploadLogoController} from '../controllers/settingsController';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { 
   getPerformers, 
   getPerformer, 
@@ -15,6 +15,7 @@ import {
 } from '../controllers/performersController';
 import { getCategory, getCategories, createCategory, patchCategory, removeCategory } from '../controllers/categoryController';
 import { retrieveDisplaySettings, advanceToNextPerformer, overrideCurrentPerformer, changeCategory, changeDisplayType } from '../controllers/displayController';
+import { ApiError, logError } from '../middleware/errorHandler';
 const router = express.Router();
 
 // Create uploads directory if it doesn't exist
@@ -22,6 +23,20 @@ const uploadsDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+// Error handling wrapper for sync/async route handlers
+const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => void | Promise<any>) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = fn(req, res, next);
+      if (result && result instanceof Promise) {
+        result.catch(next);
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
+};
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -47,7 +62,7 @@ const csvUpload = multer({
     if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
       cb(null, true);
     } else {
-      cb(new Error('Only CSV files are allowed'));
+      cb(new ApiError(400, 'Only CSV files are allowed'));
     }
   }
 });
@@ -62,7 +77,7 @@ const upload = multer({
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new ApiError(400, 'Only image files are allowed'));
     }
   }
 });
@@ -73,35 +88,35 @@ router.get('/health', (req, res) => {
 });
 
 // settings routes
-router.get('/settings', getSettings);
-router.post('/settings', setSetting);
-router.post('/settings/reset', resetSettingsController);
-router.post('/settings/upload-logo', upload.single('logo'), uploadLogoController);
+router.get('/settings', asyncHandler(getSettings));
+router.post('/settings', asyncHandler(setSetting));
+router.post('/settings/reset', asyncHandler(resetSettingsController));
+router.post('/settings/upload-logo', upload.single('logo'), asyncHandler(uploadLogoController));
 
 // Serve static files from uploads directory
 router.use('/uploads', express.static(uploadsDir));
 
 //category routes
-router.get('/categories', getCategories);
-router.get('/categories/:id', getCategory);
-router.post('/categories', createCategory);
-router.patch('/categories/:id', patchCategory);
-router.delete('/categories/:id', removeCategory);
+router.get('/categories', asyncHandler(getCategories));
+router.get('/categories/:id', asyncHandler(getCategory));
+router.post('/categories', asyncHandler(createCategory));
+router.patch('/categories/:id', asyncHandler(patchCategory));
+router.delete('/categories/:id', asyncHandler(removeCategory));
 
 // performers routes
-router.get('/performers', getPerformers);
-router.get('/performers/export-csv', exportPerformersAsCsv);
-router.get('/performers/:id', getPerformer);
-router.post('/performers', createPerformer);
-router.post('/performers/import-csv', csvUpload.single('file'), importPerformersFromCsv);
-router.patch('/performers/:id', patchPerformer);
-router.delete('/performers/:id', removePerformer);
+router.get('/performers', asyncHandler(getPerformers));
+router.get('/performers/export-csv', asyncHandler(exportPerformersAsCsv));
+router.get('/performers/:id', asyncHandler(getPerformer));
+router.post('/performers', asyncHandler(createPerformer));
+router.post('/performers/import-csv', csvUpload.single('file'), asyncHandler(importPerformersFromCsv));
+router.patch('/performers/:id', asyncHandler(patchPerformer));
+router.delete('/performers/:id', asyncHandler(removePerformer));
 
 // display control routes
-router.get('/display', retrieveDisplaySettings);
-router.post('/display/next-performer', advanceToNextPerformer);
-router.post('/display/current-performer', overrideCurrentPerformer);
-router.post('/display/category/:categoryId', changeCategory);
-router.post('/display/type', changeDisplayType);
+router.get('/display', asyncHandler(retrieveDisplaySettings));
+router.post('/display/next-performer', asyncHandler(advanceToNextPerformer));
+router.post('/display/current-performer', asyncHandler(overrideCurrentPerformer));
+router.post('/display/category/:categoryId', asyncHandler(changeCategory));
+router.post('/display/type', asyncHandler(changeDisplayType));
 
 export default router;
